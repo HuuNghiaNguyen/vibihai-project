@@ -1,14 +1,14 @@
 (async () => {
     // Load model
-    console.log('1');
+    console.log("1");
     // await faceapi.nets.faceRecognitionNet.loadFromUri("../models");
     // await faceapi.nets.faceLandmark68Net.loadFromUri("../models");
 
-    await faceapi.nets.ssdMobilenetv1.loadFromUri('../models');
-    await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-    await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
-    await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
-    await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+    // await faceapi.nets.ssdMobilenetv1.loadFromUri('../models');
+    // await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+    // await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+    // await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+    // await faceapi.nets.faceExpressionNet.loadFromUri('/models');
     // console.log('2')
     // // Detect Face
     // const input = document.getElementById("myImg");
@@ -34,13 +34,23 @@
     // let labeledFaceDescriptors = JSON.parse(localStorage.getItem('labeledFaceDescriptors'));
     // console.log('1', labeledFaceDescriptors);
     // if (!labeledFaceDescriptors){
-    const labeledFaceDescriptors = await detectAllLabeledFaces();
+
+    let response = await fetch("http://localhost:3002/web/getModel/", {
+        method: "GET",
+    });
+
+    response = await response.json();
+
+    console.log("response: ", response);
     // }
-    console.log('2', labeledFaceDescriptors);
+    const labeledFaceDescriptors = response.model;
+
+    console.log("labeledFaceDescriptors: ", labeledFaceDescriptors);
+
     // localStorage.setItem('labeledFaceDescriptors', JSON.stringify(labeledFaceDescriptors))
 
     await startVideo();
-    const video = document.getElementById('video');
+    const video = document.getElementById("video");
 
     // video.addEventListener('playing', () => {
     const canvas = faceapi.createCanvasFromMedia(video);
@@ -55,13 +65,19 @@
             .withFaceDescriptors()
             .withFaceExpressions();
         // console.log(detections)
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
-        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        const resizedDetections = faceapi.resizeResults(
+            detections,
+            displaySize
+        );
+        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
         // faceapi.draw.drawDetections(canvas, resizedDetections)
         // faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
         // faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
 
-        const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6);
+        const faceMatcher = new faceapi.FaceMatcher(
+            labeledFaceDescriptors,
+            0.6
+        );
         if (detections) {
             // detections.forEach(fd => {
             //     const bestMatch = faceMatcher.findBestMatch(fd.descriptor);
@@ -72,7 +88,6 @@
 
             // })
             const results = detections.map((fd) =>
-
                 faceMatcher.findBestMatch(fd.descriptor)
             );
 
@@ -98,57 +113,56 @@ async function startVideo() {
     //     (err) => console.error(err)
     //   );
     if (flvjs.isSupported()) {
-        var videoElement = document.getElementById('video');
+        var videoElement = document.getElementById("video");
         var flvPlayer = flvjs.createPlayer({
-            type: 'flv',
+            type: "flv",
             isLive: true,
-            url: 'http://localhost:8000/live/tinho.flv'
+            url: "http://localhost:8000/live/tinho.flv",
         });
         await flvPlayer.attachMediaElement(videoElement);
         await flvPlayer.load();
         await flvPlayer.play();
     }
-
 }
 
-async function detectAllLabeledFaces() {
-    const labels = ['Nancy', 'Yeonwoo', 'Sader', 'MaiCuong'];
+// async function detectAllLabeledFaces() {
+//     const labels = ['Nancy', 'Yeonwoo', 'Sader', 'MaiCuong'];
 
-    const parentFolder = './images';
+//     const parentFolder = './images';
 
-    return Promise.all(
-        labels.map(async (label) => {
-            const descriptions = [];
-            for (let i = 1; i <= 2; i++) {
+//     return Promise.all(
+//         labels.map(async (label) => {
+//             const descriptions = [];
+//             for (let i = 1; i <= 2; i++) {
 
-                // fs.readdir(parentFolder + '/' + label, (err, files) => {
-                //     files.forEach(async file => {
-                // console.log('file: ', file);
-                const img = await faceapi.fetchImage(`./images/${label}/${i}.jpg`);
-                const detection = await faceapi
-                    .detectSingleFace(img)
-                    .withFaceLandmarks()
-                    .withFaceDescriptor();
-                descriptions.push(detection.descriptor);
-                // })
-                // })
-            }
-            return new faceapi.LabeledFaceDescriptors(label, descriptions);
-        })
-    );
-}
+//                 // fs.readdir(parentFolder + '/' + label, (err, files) => {
+//                 //     files.forEach(async file => {
+//                 // console.log('file: ', file);
+//                 const img = await faceapi.fetchImage(`./images/${label}/${i}.jpg`);
+//                 const detection = await faceapi
+//                     .detectSingleFace(img)
+//                     .withFaceLandmarks()
+//                     .withFaceDescriptor();
+//                 descriptions.push(detection.descriptor);
+//                 // })
+//                 // })
+//             }
+//             return new faceapi.LabeledFaceDescriptors(label, descriptions);
+//         })
+//     );
+// }
 
-async function detectNancyFace() {
-    const label = 'Nancy';
-    const numberImage = 5;
-    const descriptions = [];
-    for (let i = 1; i <= numberImage; i++) {
-        const img = await faceapi.fetchImage(`./images/Nancy/${i}.jpg`);
-        const detection = await faceapi
-            .detectSingleFace(img)
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-        descriptions.push(detection.descriptor);
-    }
-    return new faceapi.LabeledFaceDescriptors(label, descriptions);
-}
+// async function detectNancyFace() {
+//     const label = 'Nancy';
+//     const numberImage = 5;
+//     const descriptions = [];
+//     for (let i = 1; i <= numberImage; i++) {
+//         const img = await faceapi.fetchImage(`./images/Nancy/${i}.jpg`);
+//         const detection = await faceapi
+//             .detectSingleFace(img)
+//             .withFaceLandmarks()
+//             .withFaceDescriptor();
+//         descriptions.push(detection.descriptor);
+//     }
+//     return new faceapi.LabeledFaceDescriptors(label, descriptions);
+// }
