@@ -113,16 +113,25 @@ async function startVideo() {
 
 async function detectAllLabeledFaces() {
     const labels = ['Nancy', 'Yeonwoo', 'Sader', 'MaiCuong'];
+
+    const parentFolder = './images';
+
     return Promise.all(
         labels.map(async (label) => {
             const descriptions = [];
             for (let i = 1; i <= 2; i++) {
+
+                // fs.readdir(parentFolder + '/' + label, (err, files) => {
+                //     files.forEach(async file => {
+                // console.log('file: ', file);
                 const img = await faceapi.fetchImage(`./images/${label}/${i}.jpg`);
                 const detection = await faceapi
                     .detectSingleFace(img)
                     .withFaceLandmarks()
                     .withFaceDescriptor();
                 descriptions.push(detection.descriptor);
+                // })
+                // })
             }
             return new faceapi.LabeledFaceDescriptors(label, descriptions);
         })

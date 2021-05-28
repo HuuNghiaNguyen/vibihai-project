@@ -15,24 +15,12 @@ app.use(express.static(path.join(__dirname, '../media')))
 app.use(express.static(path.join(__dirname, '../../weights')))
 app.use(express.static(path.join(__dirname, './dist')))
 
+const mobileRouter = require('./routers/mobile')
+app.use(mobileRouter) //passing the router to app.use
+
 app.get('/', (req, res) => res.sendFile(path.join(viewsDir, 'index.html')))
-// app.get('/face', (req, res) => res.sendFile(path.join(viewsDir, 'face.html')))
 
-app.post('/fetch_external_image', async (req, res) => {
-  const { imageUrl } = req.body
-  if (!imageUrl) {
-    return res.status(400).send('imageUrl param required')
-  }
-  try {
-    const externalResponse = await request(imageUrl)
-    res.set('content-type', externalResponse.headers['content-type'])
-    return res.status(202).send(Buffer.from(externalResponse.body))
-  } catch (err) {
-    return res.status(404).send(err.toString())
-  }
-})
-
-app.listen(3000, () => console.log('Listening on port 3000!'))
+app.listen(3002, () => console.log('Listening on port 3002!'))
 
 function request(url, returnBuffer = true, timeout = 10000) {
   return new Promise(function(resolve, reject) {
